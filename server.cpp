@@ -28,8 +28,9 @@ public:
 
   void onBody(std::unique_ptr<folly::IOBuf> /*body*/) noexcept override {}
 
+  // 요청의 끝을 수신했을 때 호출되는 메서드
   void onEOM() noexcept override {
-    // Log the request protocol
+    // 요청된 프로토콜을 로그로 출력
     std::cout << "Got connection: " << txn_->getVersionString() << " from " << txn_->getPeerAddress().describe() << std::endl;
 
     // Send a message back to the client
@@ -46,11 +47,11 @@ public:
 };
 
 int main() {
-  // Create HTTPServerOptions
+  // HTTPServerOptions 생성
   proxygen::HTTPServerOptions options;
   options.threads = 1;
 
-  // Load server certificate
+  // 서버 인증서 로드
   std::ifstream certStream("server.crt");
   if (!certStream) {
     std::cerr << "Failed to open server certificate file" << std::endl;
@@ -60,11 +61,11 @@ int main() {
   certBuffer << certStream.rdbuf();
   std::string certData = certBuffer.str();
 
-  // Configure SSL context with server certificate
+  // 서버 인증서를 사용하여 SSL 컨텍스트 설정
   options.sslContextConfig = std::make_shared<proxygen::wangle::SSLContextConfig>();
   options.sslContextConfig->setCertificate(certData, "");
 
-  // Create and start the HTTPServer
+  // HTTPServer 생성 및 시작
   proxygen::HTTPServer server(std::make_unique<MyHandlerFactory>());
   server.bind(8000, std::move(options));
   server.start();
